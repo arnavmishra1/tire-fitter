@@ -8,9 +8,8 @@ import { camberedEdges } from './tireModel.js'
 export { MM_PER_IN } from './constants.js'
 
 // Rules of thumb for how tire width follows rim width: about 0.2" of section
-// width per 0.5" of rim, and roughly half that for the tread face.
+// width per 0.5" of rim. Tread width is a fixed spec and doesn't change.
 const SECTION_IN_PER_RIM_IN = 0.4
-const TREAD_IN_PER_RIM_IN = 0.2
 // Tread face as a share of section width, for tires with no tread width data.
 const TREAD_RATIO = 0.85
 
@@ -82,11 +81,11 @@ export function tireDimensions(size, tire, rimWidthIn) {
     estimated.section = true
   }
 
-  let baseTreadMm
+  let treadMm
   if (tire?.treadWidthIn) {
-    baseTreadMm = tire.treadWidthIn * MM_PER_IN
+    treadMm = tire.treadWidthIn * MM_PER_IN
   } else {
-    baseTreadMm = baseSectionMm * TREAD_RATIO
+    treadMm = baseSectionMm * TREAD_RATIO
     estimated.tread = true
   }
 
@@ -96,7 +95,7 @@ export function tireDimensions(size, tire, rimWidthIn) {
 
   const rimDeltaIn = rimWidthIn - measuredRimIn
   const sectionWidthMm = baseSectionMm + rimDeltaIn * SECTION_IN_PER_RIM_IN * MM_PER_IN
-  const treadWidthMm = Math.min(sectionWidthMm, baseTreadMm + rimDeltaIn * TREAD_IN_PER_RIM_IN * MM_PER_IN)
+  const treadWidthMm = treadMm
 
   return {
     overallDiameterIn,

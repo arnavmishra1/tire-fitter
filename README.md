@@ -68,7 +68,8 @@ page; it only shapes the drawing.
 ## Estimates used
 
 - **Section width vs. rim width:** about 0.2" per 0.5" of rim width away from
-  the measuring rim; tread width changes about half as much.
+  the measuring rim. Tread width is a fixed spec and doesn't change with the
+  wheel; the drawing shows it at exactly that width.
 - **No section width:** the nominal width (e.g. 245 mm) on the measuring rim.
 - **No tread width:** 85% of section width.
 - **No measuring rim:** 85% of the nominal width for 45-series and lower, 80%

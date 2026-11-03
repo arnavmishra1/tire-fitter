@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { outlinePoints, tirePath, wheelRects } from '../tireModel.js'
+import { outlinePoints, tirePath, treadLine, wheelRects } from '../tireModel.js'
 
 // setups: [{ key: 'current' | 'next', label, setup }] with setup.ok === true
 const props = defineProps({
@@ -30,6 +30,7 @@ const shapes = computed(() =>
     label,
     camber: setup.wheel.camber,
     tires: [tirePath(setup, 1), tirePath(setup, -1)],
+    treads: [treadLine(setup, 1), treadLine(setup, -1)],
     wheel: wheelRects(setup),
     tread: setup.camber.treadOuterPoint,
   })),
@@ -52,6 +53,13 @@ const shapes = computed(() =>
     >
       <g v-for="s in shapes" :key="s.key" :class="['setup-shape', s.key]" :transform="`rotate(${s.camber})`">
         <path v-for="(d, i) in s.tires" :key="i" :d="d" class="tire" vector-effect="non-scaling-stroke" />
+        <line
+          v-for="(t, i) in s.treads"
+          :key="`t${i}`"
+          v-bind="t"
+          class="tread"
+          vector-effect="non-scaling-stroke"
+        />
         <rect
           v-for="(r, i) in s.wheel"
           :key="`w${i}`"

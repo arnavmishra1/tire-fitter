@@ -44,7 +44,7 @@ const rows = computed(() => {
       change: signed(b.dims.sectionWidthMm - a.dims.sectionWidthMm, ' mm'),
     },
     {
-      label: 'Tread width on this wheel',
+      label: 'Tread width',
       a: mmIn(a.dims.treadWidthMm),
       b: mmIn(b.dims.treadWidthMm),
       change: signed(b.dims.treadWidthMm - a.dims.treadWidthMm, ' mm'),

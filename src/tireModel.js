@@ -4,52 +4,64 @@
 
 import { BARREL_MM, DISC_MM, FLANGE_HEIGHT_MM, FLANGE_WIDTH_MM } from './constants.js'
 
-// Where the sidewall curve's control points sit, by how rounded the tire is,
-// as a share of sidewall height measured from the bead [a] and from the
-// tread [b]. Points near the ends give a flat, upright sidewall; points near
-// the middle give a round one.
+// The sidewall is two curves that meet at its widest point, where it's
+// vertical: one from the rim lip up to the widest point, one from there to the
+// tread edge. `rounded` only sets how long the handles are, so it changes how
+// round the bulge looks, never where the widest point or tread edge sit.
+//   mid: handle length at the widest point, as a share of each curve's height.
+//        Long handles keep the sidewall straight and upright there.
+//   lip: handle length at the rim lip, as a share of the bulge past the lip.
 export const SIDEWALL_SHAPE = {
-  low: [0.1, 0.1],
-  medium: [0.25, 0.2],
-  high: [0.45, 0.35],
+  low: { mid: 0.9, lip: 0.2 },
+  medium: { mid: 0.6, lip: 0.5 },
+  high: { mid: 0.35, lip: 0.8 },
 }
+
+// Height of the widest point, as a share of the way from rim lip to tread.
+const BULGE_HEIGHT = 0.45
+// The shoulder leaves the tread edge at half the angle of the line from the
+// tread edge to the widest point, so it always curves outward (never pinches
+// in), and its handle is a fixed share of the bulge past the tread edge. Both
+// depend only on the tire's dimensions, not on `rounded`.
+const SHOULDER_ANGLE_SHARE = 0.5
+const SHOULDER_HANDLE = 0.6
 
 function cubic(p0, p1, p2, p3, t) {
   const u = 1 - t
   return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3
 }
 
-export function maxCurveX(p0x, cx, p3x) {
-  let max = -Infinity
-  for (let i = 0; i <= 64; i++) max = Math.max(max, cubic(p0x, cx, cx, p3x, i / 64))
-  return max
+export function bezierPoint([p0, p1, p2, p3], t) {
+  return { x: cubic(p0.x, p1.x, p2.x, p3.x, t), y: cubic(p0.y, p1.y, p2.y, p3.y, t) }
 }
 
 /**
- * Control points for one sidewall, from bead to tread edge, whose widest
- * point is `maxX`. If the tire is stretched (bead wider than the bulge), the
- * sidewall is a straight line.
+ * One sidewall, from the rim lip to the tread edge, as a list of cubic
+ * segments ([p0, p1, p2, p3] each). Its widest point is exactly `maxX`. If the
+ * tire is stretched (no bulge past the lip or tread edge), it's a straight line.
  */
 export function sidewallCurve({ bead, tread, maxX, rounded }) {
-  const [a, b] = SIDEWALL_SHAPE[rounded] ?? SIDEWALL_SHAPE.medium
-  const h = tread.y - bead.y
-  const floor = Math.max(bead.x, tread.x)
+  const shape = SIDEWALL_SHAPE[rounded] ?? SIDEWALL_SHAPE.medium
+  const lerp = (t) => ({ x: bead.x + (tread.x - bead.x) * t, y: bead.y + (tread.y - bead.y) * t })
 
-  if (maxX <= floor + 0.5) {
-    const lerp = (t) => ({ x: bead.x + (tread.x - bead.x) * t, y: bead.y + h * t })
-    return [bead, lerp(1 / 3), lerp(2 / 3), tread]
+  if (maxX <= Math.max(bead.x, tread.x) + 0.5) {
+    return [[bead, lerp(1 / 3), lerp(2 / 3), tread]]
   }
 
-  // Widest point grows with the control x, so binary search for it.
-  let lo = floor
-  let hi = floor + (maxX - floor) * 4
-  for (let i = 0; i < 40; i++) {
-    const mid = (lo + hi) / 2
-    if (maxCurveX(bead.x, mid, tread.x) < maxX) lo = mid
-    else hi = mid
-  }
-  const cx = (lo + hi) / 2
-  return [bead, { x: cx, y: bead.y + h * a }, { x: cx, y: tread.y - h * b }, tread]
+  const mid = { x: maxX, y: bead.y + (tread.y - bead.y) * BULGE_HEIGHT }
+  const lower = mid.y - bead.y
+  const upper = tread.y - mid.y
+
+  // Shoulder handle at the tread edge, from the dimensions alone.
+  const dx = maxX - tread.x
+  const angle = Math.atan2(upper, dx) * SHOULDER_ANGLE_SHARE
+  const reach = dx * SHOULDER_HANDLE
+  const shoulder = { x: tread.x + reach, y: tread.y - reach * Math.tan(angle) }
+
+  return [
+    [bead, { x: bead.x + (maxX - bead.x) * shape.lip, y: bead.y }, { x: maxX, y: mid.y - lower * shape.mid }, mid],
+    [mid, { x: maxX, y: mid.y + upper * shape.mid }, shoulder, tread],
+  ]
 }
 
 /**
@@ -73,20 +85,13 @@ function sidewallFor(setup) {
 }
 
 /** Outline of the top tire section as points, before camber. */
-export function tireSectionPoints(setup, steps = 32) {
+export function tireSectionPoints(setup, steps = 24) {
   const c = setup.centerMm
-  const [p0, p1, p2, p3] = sidewallFor(setup)
-  const at = (t) => ({ x: cubic(p0.x, p1.x, p2.x, p3.x, t), y: cubic(p0.y, p1.y, p2.y, p3.y, t) })
-  const points = []
-  for (let i = 0; i <= steps; i++) {
-    const p = at(i / steps)
-    points.push({ x: c - p.x, y: p.y })
+  const side = []
+  for (const seg of sidewallFor(setup)) {
+    for (let i = side.length ? 1 : 0; i <= steps; i++) side.push(bezierPoint(seg, i / steps))
   }
-  for (let i = steps; i >= 0; i--) {
-    const p = at(i / steps)
-    points.push({ x: c + p.x, y: p.y })
-  }
-  return points
+  return [...side.map((p) => ({ x: c - p.x, y: p.y })), ...side.reverse().map((p) => ({ x: c + p.x, y: p.y }))]
 }
 
 // Corners of the top half of the wheel's flanges, before camber.
@@ -131,10 +136,20 @@ export function camberedEdges(setup) {
  */
 export function tirePath(setup, half = 1) {
   const c = setup.centerMm
-  const [p0, p1, p2, p3] = sidewallFor(setup)
+  const segs = sidewallFor(setup)
   const L = (p) => `${(c - p.x).toFixed(2)} ${(-half * p.y).toFixed(2)}`
   const R = (p) => `${(c + p.x).toFixed(2)} ${(-half * p.y).toFixed(2)}`
-  return [`M ${L(p0)}`, `C ${L(p1)} ${L(p2)} ${L(p3)}`, `L ${R(p3)}`, `C ${R(p2)} ${R(p1)} ${R(p0)}`, 'Z'].join(' ')
+  const up = segs.map(([, p1, p2, p3]) => `C ${L(p1)} ${L(p2)} ${L(p3)}`)
+  const down = [...segs].reverse().map(([p0, p1, p2]) => `C ${R(p2)} ${R(p1)} ${R(p0)}`)
+  const tread = segs.at(-1)[3]
+  return [`M ${L(segs[0][0])}`, ...up, `L ${R(tread)}`, ...down, 'Z'].join(' ')
+}
+
+/** The flat tread face as a line in screen space, before camber. */
+export function treadLine(setup, half = 1) {
+  const { centerMm: c, outerRadiusMm: r, dims } = setup
+  const y = -half * r
+  return { x1: c - dims.treadWidthMm / 2, x2: c + dims.treadWidthMm / 2, y1: y, y2: y }
 }
 
 /** Rectangles for the whole wheel in screen space (y down), before camber. */

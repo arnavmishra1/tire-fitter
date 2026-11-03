@@ -25,13 +25,15 @@ describe('tireDimensions', () => {
     expect(d.estimated.diameter).toBe(true)
   })
 
-  it('uses data when given and adjusts section width for rim width', () => {
+  it('uses data when given and adjusts only section width for rim width', () => {
     const tire = { overallDiameterIn: 25.7, sectionWidthIn: 9.7, treadWidthIn: 8.6, measuredRimIn: 8.5 }
     const onMeasured = tireDimensions(size(245, 40, 18), tire, 8.5)
     const oneInchWider = tireDimensions(size(245, 40, 18), tire, 9.5)
     expect(onMeasured.sectionWidthMm).toBeCloseTo(9.7 * 25.4, 5)
     expect(oneInchWider.sectionWidthMm - onMeasured.sectionWidthMm).toBeCloseTo(0.4 * 25.4, 5)
-    expect(oneInchWider.treadWidthMm - onMeasured.treadWidthMm).toBeCloseTo(0.2 * 25.4, 5)
+    // Tread width is the data value on any wheel.
+    expect(onMeasured.treadWidthMm).toBeCloseTo(8.6 * 25.4, 9)
+    expect(oneInchWider.treadWidthMm).toBeCloseTo(8.6 * 25.4, 9)
     expect(onMeasured.estimated.section).toBeUndefined()
   })
 

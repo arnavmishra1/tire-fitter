@@ -320,6 +320,19 @@ select:focus {
   stroke-dasharray: 6 4;
 }
 
+.setup-shape .tread {
+  stroke-width: 5;
+  stroke-linecap: butt;
+}
+
+.setup-shape.current .tread {
+  stroke: var(--current);
+}
+
+.setup-shape.next .tread {
+  stroke: var(--next);
+}
+
 .setup-shape.next .tire {
   fill: var(--next-fill);
   stroke: var(--next);
