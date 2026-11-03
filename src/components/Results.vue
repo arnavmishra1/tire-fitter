@@ -12,8 +12,8 @@ const diff = computed(() => compareSetups(props.current, props.next))
 const inches = (v, d = 2) => `${v.toFixed(d)}"`
 const mm = (v) => `${Math.round(v)} mm`
 const mmIn = (v) => `${Math.round(v)} mm (${(v / MM_PER_IN).toFixed(2)}")`
+const lb = (v) => (v === null ? 'No data' : `${v} lb`)
 const signed = (v, unit, d = 0) => `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(d)}${unit}`
-const est = (flag) => (flag ? ' *' : '')
 
 function change(v, more, less) {
   if (Math.abs(v) < 0.5) return 'No change'
@@ -27,8 +27,8 @@ const rows = computed(() => {
   return [
     {
       label: 'Overall diameter',
-      a: inches(a.dims.overallDiameterIn) + est(a.dims.estimated.diameter),
-      b: inches(b.dims.overallDiameterIn) + est(b.dims.estimated.diameter),
+      a: inches(a.dims.overallDiameterIn),
+      b: inches(b.dims.overallDiameterIn),
       change: `${signed(d.diameterIn, '"', 2)} (${signed(d.diameterPct, '%', 1)})`,
     },
     {
@@ -39,15 +39,24 @@ const rows = computed(() => {
     },
     {
       label: 'Section width on this wheel',
-      a: mmIn(a.dims.sectionWidthMm) + est(a.dims.estimated.section),
-      b: mmIn(b.dims.sectionWidthMm) + est(b.dims.estimated.section),
+      a: mmIn(a.dims.sectionWidthMm),
+      b: mmIn(b.dims.sectionWidthMm),
       change: signed(b.dims.sectionWidthMm - a.dims.sectionWidthMm, ' mm'),
     },
     {
       label: 'Tread width on this wheel',
-      a: mmIn(a.dims.treadWidthMm) + est(a.dims.estimated.tread),
-      b: mmIn(b.dims.treadWidthMm) + est(b.dims.estimated.tread),
+      a: mmIn(a.dims.treadWidthMm),
+      b: mmIn(b.dims.treadWidthMm),
       change: signed(b.dims.treadWidthMm - a.dims.treadWidthMm, ' mm'),
+    },
+    {
+      label: 'Tire weight',
+      a: lb(a.dims.weightLb),
+      b: lb(b.dims.weightLb),
+      change:
+        a.dims.weightLb !== null && b.dims.weightLb !== null
+          ? signed(b.dims.weightLb - a.dims.weightLb, ' lb', 1).replace(/\.0 /, ' ')
+          : '',
     },
     { label: 'Backspacing', a: inches(a.backspacingIn), b: inches(b.backspacingIn), change: '' },
     {
@@ -86,10 +95,6 @@ const rows = computed(() => {
     },
   ]
 })
-
-const anyEstimated = computed(() =>
-  [props.current, props.next].some((s) => Object.keys(s.dims.estimated).length > 0),
-)
 </script>
 
 <template>
@@ -121,7 +126,6 @@ const anyEstimated = computed(() =>
     </p>
     <p class="hint">
       Positions are from the hub face, with + outboard, measured with camber applied about the hub.
-      <span v-if="anyEstimated"><br />* Estimated from the tire size, because the database has no value.</span>
     </p>
   </section>
 </template>

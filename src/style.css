@@ -13,6 +13,7 @@
   --warning: #9a6700;
   --warning-bg: #fff8e5;
   --error-bg: #fdecea;
+  --flag: #d92d20;
   color-scheme: light;
 }
 
@@ -32,6 +33,7 @@
     --warning: #f2c94c;
     --warning-bg: #2b2612;
     --error-bg: #2d1615;
+    --flag: #f04438;
     color-scheme: dark;
   }
 }
@@ -233,6 +235,66 @@ select:focus {
 .problems .warning {
   background: var(--warning-bg);
   color: var(--warning);
+}
+
+.cross-section {
+  position: relative;
+}
+
+.estimate-flag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}
+
+.estimate-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--flag);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: help;
+}
+
+.estimate-flag:focus {
+  outline: none;
+}
+
+.estimate-flag:focus-visible .estimate-icon {
+  outline: 2px solid var(--flag);
+  outline-offset: 2px;
+}
+
+.estimate-tip {
+  display: none;
+  position: absolute;
+  top: 32px;
+  right: 0;
+  width: min(300px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--flag);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  font-size: 0.85rem;
+}
+
+.estimate-tip p {
+  margin: 0 0 6px;
+}
+
+.estimate-tip p:last-child {
+  margin: 0;
+}
+
+.estimate-flag:hover .estimate-tip,
+.estimate-flag:focus .estimate-tip {
+  display: block;
 }
 
 .cross-section svg {

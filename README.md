@@ -12,7 +12,9 @@ from a CSV file in this repo; the app runs entirely in the browser.
 3. Pick one to use its real section width, tread width, diameter, rim range and
    sidewall shape, or leave it on **Any tire** to estimate from the size.
 
-Values that are estimated rather than from the database are marked `*`.
+When any spec is estimated because the database has no value for it, a red
+**!** appears at the top right of the drawing. Hover over it (or tab to it) to
+see which specs are estimated for each setup.
 
 ## Run locally
 
@@ -36,13 +38,12 @@ The build goes to `dist/` with relative paths, so it works from any folder.
 
 All tire data lives in [`data/tires.csv`](data/tires.csv), one row per tire
 model per size. It's read at build time, and a bad row fails the build with its
-line number. The rows in the file now are **made-up sample data** for testing.
+line number.
 
 | Column | Required | Meaning |
 |---|---|---|
 | `brand` | yes | Brand name |
 | `model` | yes | Model name |
-| `category` | yes | `track`, `max-performance`, `high-performance`, `touring`, `winter`, `all-terrain` or `mud-terrain` |
 | `width` | yes | Size width in mm, e.g. `245` |
 | `aspect` | yes | Aspect ratio, e.g. `40` |
 | `rim` | yes | Rim diameter in inches, e.g. `18` |
@@ -52,14 +53,15 @@ line number. The rows in the file now are **made-up sample data** for testing.
 | `measured_rim_in` | no | Rim width the section width was measured on |
 | `rim_min_in`, `rim_max_in` | no | Approved rim width range (give both or neither) |
 | `rounded` | no | How rounded the sidewall looks: `low`, `medium` or `high`; blank is `medium` |
-| `source` | no | Where the numbers came from |
+| `weight` | no | Tire weight in pounds |
 
-Blank optional columns fall back to estimates from the size.
+Blank optional columns fall back to estimates from the size, except
+`weight`, which shows as "No data".
 
 ### Rounded
 
 `rounded` sets how the sidewall is drawn: `low` sits flat and upright, `high`
-bulges out round. It's set per tire rather than from the category, because
+bulges out round. It's set per tire, because
 some tires with stiff construction still look rounded. It isn't shown on the
 page; it only shapes the drawing.
 
@@ -69,8 +71,8 @@ page; it only shapes the drawing.
   the measuring rim; tread width changes about half as much.
 - **No section width:** the nominal width (e.g. 245 mm) on the measuring rim.
 - **No tread width:** 85% of section width.
-- **No measuring rim:** 85% of the nominal width (70% for 50-series and up),
-  to the nearest 0.5".
+- **No measuring rim:** 85% of the nominal width for 45-series and lower, 80%
+  for 50- and 55-series, 70% for 60-series and up, to the nearest 0.5".
 - **No rim range:** the measuring rim ± 1".
 - **Camber:** the whole wheel and tire rotate by the camber angle about the
   axle at the hub face. A point at lateral position `x` and height `y` moves

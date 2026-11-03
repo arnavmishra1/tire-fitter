@@ -3,7 +3,11 @@ import { computed } from 'vue'
 import { outlinePoints, tirePath, wheelRects } from '../tireModel.js'
 
 // setups: [{ key: 'current' | 'next', label, setup }] with setup.ok === true
-const props = defineProps({ setups: { type: Array, required: true } })
+const props = defineProps({
+  setups: { type: Array, required: true },
+  // [{ who: 'Current', specs: ['section width', ...] }] for setups with estimated specs
+  estimates: { type: Array, default: () => [] },
+})
 
 const view = computed(() => {
   const points = props.setups.flatMap((s) => outlinePoints(s.setup))
@@ -34,6 +38,13 @@ const shapes = computed(() =>
 
 <template>
   <figure class="card cross-section">
+    <div v-if="estimates.length" class="estimate-flag" tabindex="0" aria-describedby="estimate-tip">
+      <span class="estimate-icon" aria-hidden="true">!</span>
+      <div id="estimate-tip" role="tooltip" class="estimate-tip">
+        <p>Some specs are estimates, because no data was available for them. They're worked out from the tire size.</p>
+        <p v-for="e in estimates" :key="e.who"><strong>{{ e.who }}:</strong> {{ e.specs.join(', ') }}</p>
+      </div>
+    </div>
     <svg
       :viewBox="`${view.xMin} ${-view.yTop} ${view.w} ${view.h}`"
       role="img"

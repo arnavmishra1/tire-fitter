@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSetup, compareSetups, estimatedMeasuredRim, tireDimensions, tiresForSize, validateInputs } from './fitment.js'
+import { buildSetup, compareSetups, estimatedMeasuredRim, estimatedSpecs, tireDimensions, tiresForSize, validateInputs } from './fitment.js'
 
 const wheel = (width, diameter, offset, camber = 0) => ({ width, diameter, offset, camber })
 const size = (width, aspect, rim) => ({ width, aspect, rim })
@@ -38,6 +38,9 @@ describe('tireDimensions', () => {
   it('estimates the measuring rim', () => {
     expect(estimatedMeasuredRim(245, 40)).toBe(8)
     expect(estimatedMeasuredRim(265, 70)).toBe(7.5)
+    // Matches the published 6.5" and 7.5" measuring rims for these sizes.
+    expect(estimatedMeasuredRim(205, 50)).toBe(6.5)
+    expect(estimatedMeasuredRim(225, 45)).toBe(7.5)
   })
 })
 
@@ -109,5 +112,35 @@ describe('tiresForSize', () => {
     ]
     expect(tiresForSize(tires, size(245, 40, 18)).map((t) => t.brand)).toEqual(['A', 'B'])
     expect(tiresForSize(tires, size(245, '', 18))).toEqual([])
+  })
+})
+
+describe('estimatedSpecs', () => {
+  it('lists specs that came from the size', () => {
+    const generic = buildSetup(wheel(7, 16, 45), size(205, 50, 16))
+    expect(estimatedSpecs(generic)).toEqual([
+      'overall diameter',
+      'section width',
+      'tread width',
+      'measuring rim',
+      'approved rim range',
+      'weight (unknown)',
+    ])
+  })
+
+  it('is empty when the tire has every spec', () => {
+    const tire = {
+      width: 205,
+      aspect: 50,
+      rim: 16,
+      sectionWidthIn: 8.4,
+      treadWidthIn: 6.7,
+      overallDiameterIn: 24.1,
+      measuredRimIn: 6.5,
+      rimMinIn: 5.5,
+      rimMaxIn: 7.5,
+      weightLb: 19,
+    }
+    expect(estimatedSpecs(buildSetup(wheel(7, 16, 45), size(205, 50, 16), tire))).toEqual([])
   })
 })

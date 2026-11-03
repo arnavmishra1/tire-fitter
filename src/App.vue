@@ -4,16 +4,16 @@ import tires from '../data/tires.csv'
 import CrossSection from './components/CrossSection.vue'
 import Results from './components/Results.vue'
 import SetupForm from './components/SetupForm.vue'
-import { buildSetup } from './fitment.js'
+import { buildSetup, estimatedSpecs } from './fitment.js'
 
 const current = reactive({
-  wheel: { diameter: 18, width: 8.5, offset: 35, camber: -1 },
-  size: { width: 245, aspect: 40 },
+  wheel: { diameter: 16, width: 7, offset: 45, camber: -1 },
+  size: { width: 205, aspect: 50 },
   tireId: '',
 })
 const next = reactive({
-  wheel: { diameter: 18, width: 9.5, offset: 22, camber: -2.5 },
-  size: { width: 255, aspect: 35 },
+  wheel: { diameter: 16, width: 8, offset: 35, camber: -2.5 },
+  size: { width: 225, aspect: 45 },
   tireId: '',
 })
 
@@ -21,6 +21,15 @@ const tireById = new Map(tires.map((t) => [t.id, t]))
 const currentSetup = computed(() => buildSetup(current.wheel, current.size, tireById.get(current.tireId)))
 const nextSetup = computed(() => buildSetup(next.wheel, next.size, tireById.get(next.tireId)))
 const bothOk = computed(() => currentSetup.value.ok && nextSetup.value.ok)
+
+const estimates = computed(() =>
+  bothOk.value
+    ? [
+        { who: 'Current', specs: estimatedSpecs(currentSetup.value) },
+        { who: 'New', specs: estimatedSpecs(nextSetup.value) },
+      ].filter((e) => e.specs.length)
+    : [],
+)
 
 const problems = computed(() => [
   ...(currentSetup.value.errors ?? []).map((m) => ({ who: 'Current', type: 'error', m })),
@@ -54,6 +63,7 @@ const problems = computed(() => [
           { key: 'current', label: 'Current', setup: currentSetup },
           { key: 'next', label: 'New', setup: nextSetup },
         ]"
+        :estimates="estimates"
       />
       <Results :current="currentSetup" :next="nextSetup" />
     </template>

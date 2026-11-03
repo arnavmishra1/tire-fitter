@@ -7,7 +7,6 @@ const row = (overrides = {}) => {
   const base = {
     brand: 'Brand',
     model: 'Model',
-    category: 'touring',
     width: '245',
     aspect: '40',
     rim: '18',
@@ -18,7 +17,7 @@ const row = (overrides = {}) => {
     rim_min_in: '8',
     rim_max_in: '9.5',
     rounded: '',
-    source: 'test',
+    weight: '21',
   }
   return COLUMNS.map((c) => overrides[c] ?? base[c]).join(',')
 }
@@ -43,6 +42,7 @@ describe('loadTires', () => {
       width: 245,
       sectionWidthIn: 9.7,
       treadWidthIn: null,
+      weightLb: 21,
       rounded: 'medium',
     })
   })
@@ -57,8 +57,8 @@ describe('loadTires', () => {
   })
 
   it('reports every bad row with its line number', () => {
-    const csv = `${header}\n${row({ width: 'abc' })}\n${row({ category: 'sporty' })}\n${row()}\n${row()}`
-    expect(() => loadTires(csv)).toThrow(/line 2: width.*\n.*line 3: category.*\n.*line 5: duplicate of line 4/s)
+    const csv = `${header}\n${row({ width: 'abc' })}\n${row({ weight: '-3' })}\n${row()}\n${row()}`
+    expect(() => loadTires(csv)).toThrow(/line 2: width.*\n.*line 3: weight.*\n.*line 5: duplicate of line 4/s)
   })
 
   it('requires both rim range columns', () => {

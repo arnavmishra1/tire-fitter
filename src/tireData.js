@@ -6,20 +6,9 @@
 export const ROUNDED_LEVELS = ['low', 'medium', 'high']
 export const DEFAULT_ROUNDED = 'medium'
 
-export const CATEGORIES = [
-  'track',
-  'max-performance',
-  'high-performance',
-  'touring',
-  'winter',
-  'all-terrain',
-  'mud-terrain',
-]
-
 export const COLUMNS = [
   'brand',
   'model',
-  'category',
   'width',
   'aspect',
   'rim',
@@ -30,10 +19,10 @@ export const COLUMNS = [
   'rim_min_in',
   'rim_max_in',
   'rounded',
-  'source',
+  'weight',
 ]
 
-const REQUIRED = ['brand', 'model', 'category', 'width', 'aspect', 'rim']
+const REQUIRED = ['brand', 'model', 'width', 'aspect', 'rim']
 
 // Range checks for numeric columns: [min, max].
 const NUMERIC = {
@@ -46,6 +35,7 @@ const NUMERIC = {
   measured_rim_in: [3, 16],
   rim_min_in: [3, 16],
   rim_max_in: [3, 16],
+  weight: [5, 150],
 }
 
 /** Minimal CSV parser: handles quoted fields, "" escapes and CRLF. */
@@ -131,11 +121,6 @@ export function loadTires(text) {
       num[col] = value
     }
 
-    const category = raw.category.toLowerCase()
-    if (raw.category && !CATEGORIES.includes(category)) {
-      fail(`category "${raw.category}" must be one of: ${CATEGORIES.join(', ')}`)
-    }
-
     const rounded = raw.rounded.toLowerCase()
     if (rounded && !ROUNDED_LEVELS.includes(rounded)) {
       fail(`rounded "${raw.rounded}" must be low, medium, high or blank`)
@@ -161,7 +146,6 @@ export function loadTires(text) {
       id,
       brand: raw.brand,
       model: raw.model,
-      category,
       width: num.width,
       aspect: num.aspect,
       rim: num.rim,
@@ -172,7 +156,7 @@ export function loadTires(text) {
       rimMinIn: num.rim_min_in,
       rimMaxIn: num.rim_max_in,
       rounded: rounded || DEFAULT_ROUNDED,
-      source: raw.source,
+      weightLb: num.weight,
     })
   }
 

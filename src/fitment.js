@@ -43,7 +43,7 @@ export function validateInputs(wheel, size) {
 
 /** Approximate ETRTO measuring rim, rounded to the nearest half inch. */
 export function estimatedMeasuredRim(width, aspect) {
-  const ratio = aspect >= 50 ? 0.7 : 0.85
+  const ratio = aspect >= 60 ? 0.7 : aspect >= 50 ? 0.8 : 0.85
   return Math.round(((width * ratio) / MM_PER_IN) * 2) / 2
 }
 
@@ -90,6 +90,10 @@ export function tireDimensions(size, tire, rimWidthIn) {
     estimated.tread = true
   }
 
+  // Weight has no size-based estimate, so it's left unknown.
+  const weightLb = tire?.weightLb ?? null
+  if (weightLb === null) estimated.weight = true
+
   const rimDeltaIn = rimWidthIn - measuredRimIn
   const sectionWidthMm = baseSectionMm + rimDeltaIn * SECTION_IN_PER_RIM_IN * MM_PER_IN
   const treadWidthMm = Math.min(sectionWidthMm, baseTreadMm + rimDeltaIn * TREAD_IN_PER_RIM_IN * MM_PER_IN)
@@ -102,6 +106,7 @@ export function tireDimensions(size, tire, rimWidthIn) {
     rimMaxIn,
     sectionWidthMm,
     treadWidthMm,
+    weightLb,
     // Sidewall shape for drawing only; not shown to the viewer.
     rounded: tire?.rounded ?? 'medium',
     estimated,
@@ -196,4 +201,20 @@ export function compareSetups(a, b) {
     tireInnerMm: a.edges.tireInner - b.edges.tireInner,
     actualSpeedAt60: (60 * db) / da,
   }
+}
+
+const ESTIMATE_LABELS = {
+  diameter: 'overall diameter',
+  section: 'section width',
+  tread: 'tread width',
+  measuredRim: 'measuring rim',
+  rimRange: 'approved rim range',
+  weight: 'weight (unknown)',
+}
+
+/** Names of the specs in a setup that came from the size, not tire data. */
+export function estimatedSpecs(setup) {
+  return Object.keys(ESTIMATE_LABELS)
+    .filter((k) => setup.dims.estimated[k])
+    .map((k) => ESTIMATE_LABELS[k])
 }

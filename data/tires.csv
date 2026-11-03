@@ -1,9 +1,13 @@
-brand,model,category,width,aspect,rim,section_width_in,tread_width_in,overall_diameter_in,measured_rim_in,rim_min_in,rim_max_in,rounded,source
-Example Tire Co,Apex Sport,max-performance,245,40,18,9.7,8.6,25.7,8.5,8.0,9.5,,SAMPLE DATA - replace
-Example Tire Co,Apex Sport,max-performance,255,35,18,10.2,9.1,25.1,9.0,8.5,10.0,,SAMPLE DATA - replace
-Testmark,Cruiser GT,touring,245,40,18,9.6,7.9,25.7,8.5,8.0,9.5,high,SAMPLE DATA - replace
-Testmark,Cruiser GT,touring,225,45,17,8.9,7.4,25.0,7.5,7.0,8.5,,SAMPLE DATA - replace
-Testmark,Track Day R,track,255,35,18,10.3,9.6,25.0,9.0,8.5,10.0,low,SAMPLE DATA - replace
-Placeholder Rubber,Allweather Pro,high-performance,245,40,18,9.8,,25.8,8.5,8.0,9.5,,SAMPLE DATA - replace
-Placeholder Rubber,Allweather Pro,high-performance,225,45,17,9.0,,25.0,7.5,7.0,8.5,low,SAMPLE DATA - replace
-Placeholder Rubber,Trailhead AT,all-terrain,265,70,17,10.6,8.6,31.6,8.0,7.0,9.0,,SAMPLE DATA - replace
+brand,model,width,aspect,rim,section_width_in,tread_width_in,overall_diameter_in,measured_rim_in,rim_min_in,rim_max_in,rounded,weight
+Continental,ExtremeContact DWS 06 Plus,205,50,16,8.4,6.7,24.1,6.5,5.5,7.5,high,19
+Firestone,Firehawk Indy 500,205,50,16,8.4,7.1,24.1,6.5,5.5,7.5,medium,21
+Firestone,Firehawk Indy 500 V2,205,50,16,8.4,7.2,24.1,6.5,5.5,7.5,medium,21
+Yokohama,Advan Fleva V701,205,50,16,8.3,6.9,24,6.5,5.5,7.5,medium,19
+Yokohama,Advan Neova AD09,205,50,16,8.5,6.7,24.1,6.5,5.5,7.5,low,19
+Bridgestone,Potenza RE-71RS,205,50,16,8.4,6,24.1,6.5,5.5,7.5,high,20
+Bridgestone,Potenza RE-71RZ,205,50,16,8.4,6.3,24.1,6.5,5.5,7.5,high,21
+Yokohama,Advan A052,205,50,16,8.4,7.4,24.2,6.5,5.5,7.5,low,20
+Toyo,Proxes R1R,225,45,16,9,8,23.9,7.5,7,8.5,medium,23
+Yokohama,Advan A052,225,45,16,8.9,8,24.1,7.5,7,8.5,low,20
+Nankang,Sportnex CR-S V2,225,45,16,8.9,7.8,23.9,7,7,8,low,22
+Toyo,Proxes Sport R,225,45,16,,7.8,,,,,medium,22
