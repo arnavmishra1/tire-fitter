@@ -2,3 +2,5 @@
 node_modules/
 dist/
 *.numbers
+# Screenshots used as data sources
+data/*.png
