@@ -73,6 +73,27 @@ describe('buildSetup and compareSetups', () => {
     expect(buildSetup(wheel(7, 18, 35), size(245, 40, 18), tire).warnings[0]).toMatch(/bulge/)
   })
 
+  it('matches the wheel lip at zero camber and moves the rim edges with camber', () => {
+    expect(a.camber.rimOuter).toBeCloseTo(a.edges.wheelOuter, 9)
+    expect(a.camber.rimInner).toBeCloseTo(a.edges.wheelInner, 9)
+    const d = compareSetups(a, b)
+    // Same as the hub-height lip change when neither setup has camber.
+    expect(d.rimOuterMm).toBeCloseTo(d.wheelOuterMm, 9)
+    expect(d.rimInnerMm).toBeCloseTo(d.wheelInnerMm, 9)
+
+    const tilted = buildSetup(wheel(8.5, 18, 35, -2), size(245, 40, 18))
+    const t = (-2 * Math.PI) / 180
+    const flangeTop = a.rimRadiusMm + 17.5
+    const barrelIn = a.rimRadiusMm - 8
+    const lip = a.edges.wheelOuter
+    // The lower corner of the outer flange sticks out furthest with negative camber.
+    expect(tilted.camber.rimOuter).toBeCloseTo(
+      Math.max(lip * Math.cos(t) + flangeTop * Math.sin(t), lip * Math.cos(t) + barrelIn * Math.sin(t)),
+      9,
+    )
+    expect(compareSetups(a, tilted).rimInnerMm).toBeGreaterThan(0)
+  })
+
   it('takes the tire rim diameter from the wheel', () => {
     const s = buildSetup(wheel(8, 17, 40), { width: 225, aspect: 45 })
     expect(s.size.rim).toBe(17)

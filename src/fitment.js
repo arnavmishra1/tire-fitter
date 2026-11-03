@@ -194,6 +194,8 @@ export function compareSetups(a, b) {
     innerMm: a.camber.topInner - b.camber.topInner,
     treadOuterMm: b.camber.treadOuter - a.camber.treadOuter,
     treadInnerMm: a.camber.treadInner - b.camber.treadInner,
+    rimOuterMm: b.camber.rimOuter - a.camber.rimOuter,
+    rimInnerMm: a.camber.rimInner - b.camber.rimInner,
     wheelOuterMm: b.edges.wheelOuter - a.edges.wheelOuter,
     wheelInnerMm: a.edges.wheelInner - b.edges.wheelInner,
     tireOuterMm: b.edges.tireOuter - a.edges.tireOuter,

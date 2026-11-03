@@ -80,6 +80,20 @@ const rows = computed(() => {
       strong: true,
     },
     {
+      label: 'Outer rim edge, top (poke)',
+      a: signed(a.camber.rimOuter, ' mm'),
+      b: signed(b.camber.rimOuter, ' mm'),
+      change: change(d.rimOuterMm, 'more poke', 'less poke'),
+      strong: true,
+    },
+    {
+      label: 'Inner rim edge, top',
+      a: signed(a.camber.rimInner, ' mm'),
+      b: signed(b.camber.rimInner, ' mm'),
+      change: change(d.rimInnerMm, 'closer to suspension', 'further from suspension'),
+      strong: true,
+    },
+    {
       label: 'Outermost point, top half (fender)',
       a: signed(a.camber.topOuter, ' mm'),
       b: signed(b.camber.topOuter, ' mm'),

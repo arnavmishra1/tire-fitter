@@ -112,8 +112,9 @@ export function outlinePoints(setup) {
 }
 
 /**
- * Lateral positions at the top of the tire with camber applied: the tread
- * edges, and the furthest points in and out of the top half (tire or wheel).
+ * Lateral positions at the top of the wheel with camber applied: the tread
+ * edges, the rim edges (outer edge of each flange), and the furthest points in
+ * and out of the top half (tire or wheel).
  */
 export function camberedEdges(setup) {
   const { centerMm: c, outerRadiusMm: r, dims } = setup
@@ -121,11 +122,16 @@ export function camberedEdges(setup) {
   const xs = [...tireSectionPoints(setup), ...wheelCorners(setup)].map((p) => rotatePoint(p, deg).x)
   const treadOuter = rotatePoint({ x: c + dims.treadWidthMm / 2, y: r }, deg)
   const treadInner = rotatePoint({ x: c - dims.treadWidthMm / 2, y: r }, deg)
+  // The flange's outer face spans two corners; camber can make either one
+  // the furthest point, so take the extreme of both.
+  const rimXs = wheelCorners(setup).map((p) => rotatePoint(p, deg).x)
   return {
     topOuter: Math.max(...xs),
     topInner: Math.min(...xs),
     treadOuter: treadOuter.x,
     treadInner: treadInner.x,
+    rimOuter: Math.max(...rimXs),
+    rimInner: Math.min(...rimXs),
     treadOuterPoint: treadOuter,
   }
 }
