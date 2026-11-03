@@ -1,0 +1,9 @@
+brand,model,category,width,aspect,rim,section_width_in,tread_width_in,overall_diameter_in,measured_rim_in,rim_min_in,rim_max_in,stiffness,source
+Example Tire Co,Apex Sport,max-performance,245,40,18,9.7,8.6,25.7,8.5,8.0,9.5,,SAMPLE DATA - replace
+Example Tire Co,Apex Sport,max-performance,255,35,18,10.2,9.1,25.1,9.0,8.5,10.0,,SAMPLE DATA - replace
+Testmark,Cruiser GT,touring,245,40,18,9.6,7.9,25.7,8.5,8.0,9.5,,SAMPLE DATA - replace
+Testmark,Cruiser GT,touring,225,45,17,8.9,7.4,25.0,7.5,7.0,8.5,,SAMPLE DATA - replace
+Testmark,Track Day R,track,255,35,18,10.3,9.6,25.0,9.0,8.5,10.0,,SAMPLE DATA - replace
+Placeholder Rubber,Allweather Pro,high-performance,245,40,18,9.8,,25.8,8.5,8.0,9.5,,SAMPLE DATA - replace
+Placeholder Rubber,Allweather Pro,high-performance,225,45,17,9.0,,25.0,7.5,7.0,8.5,high,SAMPLE DATA - replace
+Placeholder Rubber,Trailhead AT,all-terrain,265,70,17,10.6,8.6,31.6,8.0,7.0,9.0,,SAMPLE DATA - replace
