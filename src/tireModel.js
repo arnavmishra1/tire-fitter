@@ -4,13 +4,14 @@
 
 import { BARREL_MM, DISC_MM, FLANGE_HEIGHT_MM, FLANGE_WIDTH_MM } from './constants.js'
 
-// Where the sidewall curve's control points sit, as a share of sidewall
-// height measured from the bead [a] and from the tread [b]. Points near the
-// ends give a flat, upright sidewall; points near the middle give a round one.
+// Where the sidewall curve's control points sit, by how rounded the tire is,
+// as a share of sidewall height measured from the bead [a] and from the
+// tread [b]. Points near the ends give a flat, upright sidewall; points near
+// the middle give a round one.
 export const SIDEWALL_SHAPE = {
-  high: [0.1, 0.1],
+  low: [0.1, 0.1],
   medium: [0.25, 0.2],
-  low: [0.45, 0.35],
+  high: [0.45, 0.35],
 }
 
 function cubic(p0, p1, p2, p3, t) {
@@ -29,8 +30,8 @@ export function maxCurveX(p0x, cx, p3x) {
  * point is `maxX`. If the tire is stretched (bead wider than the bulge), the
  * sidewall is a straight line.
  */
-export function sidewallCurve({ bead, tread, maxX, stiffness }) {
-  const [a, b] = SIDEWALL_SHAPE[stiffness] ?? SIDEWALL_SHAPE.medium
+export function sidewallCurve({ bead, tread, maxX, rounded }) {
+  const [a, b] = SIDEWALL_SHAPE[rounded] ?? SIDEWALL_SHAPE.medium
   const h = tread.y - bead.y
   const floor = Math.max(bead.x, tread.x)
 
@@ -67,7 +68,7 @@ function sidewallFor(setup) {
     bead: { x: rimHalfMm + FLANGE_WIDTH_MM / 2, y: rimRadiusMm + FLANGE_HEIGHT_MM },
     tread: { x: dims.treadWidthMm / 2, y: outerRadiusMm },
     maxX: dims.sectionWidthMm / 2,
-    stiffness: dims.stiffness,
+    rounded: dims.rounded,
   })
 }
 

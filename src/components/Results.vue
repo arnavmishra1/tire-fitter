@@ -49,12 +49,6 @@ const rows = computed(() => {
       b: mmIn(b.dims.treadWidthMm) + est(b.dims.estimated.tread),
       change: signed(b.dims.treadWidthMm - a.dims.treadWidthMm, ' mm'),
     },
-    {
-      label: 'Sidewall stiffness',
-      a: a.dims.stiffness + est(a.dims.estimated.stiffness),
-      b: b.dims.stiffness + est(b.dims.estimated.stiffness),
-      change: '',
-    },
     { label: 'Backspacing', a: inches(a.backspacingIn), b: inches(b.backspacingIn), change: '' },
     {
       label: 'Camber',

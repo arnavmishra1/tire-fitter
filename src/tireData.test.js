@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { COLUMNS, deriveStiffness, loadTires, parseCsv } from './tireData.js'
+import { COLUMNS, loadTires, parseCsv } from './tireData.js'
 
 const header = COLUMNS.join(',')
 const row = (overrides = {}) => {
@@ -17,7 +17,7 @@ const row = (overrides = {}) => {
     measured_rim_in: '8.5',
     rim_min_in: '8',
     rim_max_in: '9.5',
-    stiffness: '',
+    rounded: '',
     source: 'test',
   }
   return COLUMNS.map((c) => overrides[c] ?? base[c]).join(',')
@@ -35,16 +35,6 @@ describe('parseCsv', () => {
   })
 })
 
-describe('deriveStiffness', () => {
-  it('starts from the category and adjusts for aspect ratio', () => {
-    expect(deriveStiffness('touring', 55)).toBe('low')
-    expect(deriveStiffness('touring', 35)).toBe('medium')
-    expect(deriveStiffness('high-performance', 65)).toBe('low')
-    expect(deriveStiffness('max-performance', 30)).toBe('high')
-    expect(deriveStiffness('all-terrain', 70)).toBe('medium')
-  })
-})
-
 describe('loadTires', () => {
   it('loads a valid row', () => {
     const [tire] = loadTires(`${header}\n${row()}`)
@@ -53,15 +43,17 @@ describe('loadTires', () => {
       width: 245,
       sectionWidthIn: 9.7,
       treadWidthIn: null,
-      stiffness: 'low',
-      stiffnessEstimated: true,
+      rounded: 'medium',
     })
   })
 
-  it('keeps a stiffness override', () => {
-    const [tire] = loadTires(`${header}\n${row({ stiffness: 'High' })}`)
-    expect(tire.stiffness).toBe('high')
-    expect(tire.stiffnessEstimated).toBe(false)
+  it('reads the rounded value', () => {
+    const [tire] = loadTires(`${header}\n${row({ rounded: 'High' })}`)
+    expect(tire.rounded).toBe('high')
+  })
+
+  it('rejects an unknown rounded value', () => {
+    expect(() => loadTires(`${header}\n${row({ rounded: 'very' })}`)).toThrow(/rounded "very"/)
   })
 
   it('reports every bad row with its line number', () => {

@@ -10,7 +10,7 @@ from a CSV file in this repo; the app runs entirely in the browser.
    and aspect ratio. The tire's rim diameter always matches the wheel.
 2. A dropdown lists every tire in the database at that exact size.
 3. Pick one to use its real section width, tread width, diameter, rim range and
-   sidewall stiffness, or leave it on **Any tire** to estimate from the size.
+   sidewall shape, or leave it on **Any tire** to estimate from the size.
 
 Values that are estimated rather than from the database are marked `*`.
 
@@ -51,26 +51,17 @@ line number. The rows in the file now are **made-up sample data** for testing.
 | `overall_diameter_in` | no | Overall diameter in inches |
 | `measured_rim_in` | no | Rim width the section width was measured on |
 | `rim_min_in`, `rim_max_in` | no | Approved rim width range (give both or neither) |
-| `stiffness` | no | `low`, `medium` or `high`; blank derives it from the category |
+| `rounded` | no | How rounded the sidewall looks: `low`, `medium` or `high`; blank is `medium` |
 | `source` | no | Where the numbers came from |
 
 Blank optional columns fall back to estimates from the size.
 
-### Sidewall stiffness
+### Rounded
 
-When `stiffness` is blank, it starts from the category:
-
-| Category | Stiffness |
-|---|---|
-| `track`, `max-performance`, `mud-terrain` | high |
-| `high-performance`, `all-terrain` | medium |
-| `touring`, `winter` | low |
-
-For the on-road categories, 35-series and lower moves it up one step, and
-65-series and higher moves it down one. Fill in `stiffness` to override.
-
-Stiffness changes how the sidewall is drawn: high sits flat and upright, low
-looks rounded.
+`rounded` sets how the sidewall is drawn: `low` sits flat and upright, `high`
+bulges out round. It's set per tire rather than from the category, because
+some tires with stiff construction still look rounded. It isn't shown on the
+page; it only shapes the drawing.
 
 ## Estimates used
 
@@ -95,7 +86,7 @@ These live at the top of [`src/fitment.js`](src/fitment.js).
 
 - `src/fitment.js`: fitment math (dimensions, positions, comparisons)
 - `src/tireModel.js`: cross-section shapes, including the sidewall curve
-- `src/tireData.js`: CSV parsing, validation and stiffness rule
+- `src/tireData.js`: CSV parsing and validation
 - `src/components/`: the setup form, the drawing and the results table
 - `vite.config.js`: the plugin that loads `data/tires.csv`
 

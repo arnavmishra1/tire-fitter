@@ -1,22 +1,20 @@
 // Parses and validates data/tires.csv. Runs at build time (from the Vite
 // plugin in vite.config.js), so the browser only ever sees clean records.
 
-export const STIFFNESS_LEVELS = ['low', 'medium', 'high']
+// How rounded the sidewall looks: low sits flat and upright, high bulges.
+// Only used to draw the tire; it isn't shown on the page.
+export const ROUNDED_LEVELS = ['low', 'medium', 'high']
+export const DEFAULT_ROUNDED = 'medium'
 
-// Starting stiffness for each category, used when a row leaves `stiffness` blank.
-export const CATEGORY_STIFFNESS = {
-  track: 'high',
-  'max-performance': 'high',
-  'high-performance': 'medium',
-  touring: 'low',
-  winter: 'low',
-  'all-terrain': 'medium',
-  'mud-terrain': 'high',
-}
-
-// Categories whose stiffness shifts with aspect ratio. Off-road tires get
-// their stiffness from construction (ply rating), not sidewall height.
-const ASPECT_ADJUSTED = new Set(['track', 'max-performance', 'high-performance', 'touring', 'winter'])
+export const CATEGORIES = [
+  'track',
+  'max-performance',
+  'high-performance',
+  'touring',
+  'winter',
+  'all-terrain',
+  'mud-terrain',
+]
 
 export const COLUMNS = [
   'brand',
@@ -31,7 +29,7 @@ export const COLUMNS = [
   'measured_rim_in',
   'rim_min_in',
   'rim_max_in',
-  'stiffness',
+  'rounded',
   'source',
 ]
 
@@ -96,15 +94,6 @@ export function parseCsv(text) {
   return rows
 }
 
-export function deriveStiffness(category, aspect) {
-  let level = STIFFNESS_LEVELS.indexOf(CATEGORY_STIFFNESS[category])
-  if (ASPECT_ADJUSTED.has(category)) {
-    if (aspect <= 35) level++
-    if (aspect >= 65) level--
-  }
-  return STIFFNESS_LEVELS[Math.max(0, Math.min(2, level))]
-}
-
 export function sizeLabel({ width, aspect, rim }) {
   return `${width}/${aspect}R${rim}`
 }
@@ -143,13 +132,13 @@ export function loadTires(text) {
     }
 
     const category = raw.category.toLowerCase()
-    if (raw.category && !(category in CATEGORY_STIFFNESS)) {
-      fail(`category "${raw.category}" must be one of: ${Object.keys(CATEGORY_STIFFNESS).join(', ')}`)
+    if (raw.category && !CATEGORIES.includes(category)) {
+      fail(`category "${raw.category}" must be one of: ${CATEGORIES.join(', ')}`)
     }
 
-    const stiffness = raw.stiffness.toLowerCase()
-    if (stiffness && !STIFFNESS_LEVELS.includes(stiffness)) {
-      fail(`stiffness "${raw.stiffness}" must be low, medium, high or blank`)
+    const rounded = raw.rounded.toLowerCase()
+    if (rounded && !ROUNDED_LEVELS.includes(rounded)) {
+      fail(`rounded "${raw.rounded}" must be low, medium, high or blank`)
     }
 
     if ((num.rim_min_in === null) !== (num.rim_max_in === null)) {
@@ -182,8 +171,7 @@ export function loadTires(text) {
       measuredRimIn: num.measured_rim_in,
       rimMinIn: num.rim_min_in,
       rimMaxIn: num.rim_max_in,
-      stiffness: stiffness || deriveStiffness(category, num.aspect),
-      stiffnessEstimated: !stiffness,
+      rounded: rounded || DEFAULT_ROUNDED,
       source: raw.source,
     })
   }

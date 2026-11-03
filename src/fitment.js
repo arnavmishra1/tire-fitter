@@ -94,14 +94,6 @@ export function tireDimensions(size, tire, rimWidthIn) {
   const sectionWidthMm = baseSectionMm + rimDeltaIn * SECTION_IN_PER_RIM_IN * MM_PER_IN
   const treadWidthMm = Math.min(sectionWidthMm, baseTreadMm + rimDeltaIn * TREAD_IN_PER_RIM_IN * MM_PER_IN)
 
-  let stiffness = tire?.stiffness
-  if (!stiffness) {
-    stiffness = 'medium'
-    estimated.stiffness = true
-  } else if (tire.stiffnessEstimated) {
-    estimated.stiffness = true
-  }
-
   return {
     overallDiameterIn,
     sidewallIn: (overallDiameterIn - size.rim) / 2,
@@ -110,7 +102,8 @@ export function tireDimensions(size, tire, rimWidthIn) {
     rimMaxIn,
     sectionWidthMm,
     treadWidthMm,
-    stiffness,
+    // Sidewall shape for drawing only; not shown to the viewer.
+    rounded: tire?.rounded ?? 'medium',
     estimated,
   }
 }

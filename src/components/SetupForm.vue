@@ -72,10 +72,6 @@ watch(matches, (list) => {
       <p v-if="!matches.length" class="hint">Widths and sidewall shape are estimated from the size.</p>
       <dl v-if="selected" class="tire-facts">
         <div><dt>Category</dt><dd>{{ selected.category }}</dd></div>
-        <div>
-          <dt>Sidewall</dt>
-          <dd>{{ selected.stiffness }}<span v-if="selected.stiffnessEstimated" class="hint"> (from category)</span></dd>
-        </div>
         <div v-if="selected.measuredRimIn"><dt>Measured on</dt><dd>{{ selected.measuredRimIn }}" rim</dd></div>
         <div v-if="selected.rimMinIn"><dt>Rim range</dt><dd>{{ selected.rimMinIn }}–{{ selected.rimMaxIn }}"</dd></div>
         <div v-if="selected.source" class="source"><dt>Source</dt><dd>{{ selected.source }}</dd></div>

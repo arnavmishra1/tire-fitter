@@ -7,21 +7,21 @@ const tread = { x: 105, y: 326 }
 
 describe('sidewallCurve', () => {
   it('bulges out to the section width', () => {
-    for (const stiffness of ['low', 'medium', 'high']) {
-      const [p0, p1, , p3] = sidewallCurve({ bead, tread, maxX: 130, stiffness })
+    for (const rounded of ['low', 'medium', 'high']) {
+      const [p0, p1, , p3] = sidewallCurve({ bead, tread, maxX: 130, rounded })
       expect(maxCurveX(p0.x, p1.x, p3.x)).toBeCloseTo(130, 1)
     }
   })
 
-  it('puts control points nearer the ends for stiffer sidewalls', () => {
-    const high = sidewallCurve({ bead, tread, maxX: 130, stiffness: 'high' })
-    const low = sidewallCurve({ bead, tread, maxX: 130, stiffness: 'low' })
-    expect(high[1].y).toBeLessThan(low[1].y)
-    expect(high[2].y).toBeGreaterThan(low[2].y)
+  it('puts control points nearer the middle for rounder sidewalls', () => {
+    const flat = sidewallCurve({ bead, tread, maxX: 130, rounded: 'low' })
+    const round = sidewallCurve({ bead, tread, maxX: 130, rounded: 'high' })
+    expect(flat[1].y).toBeLessThan(round[1].y)
+    expect(flat[2].y).toBeGreaterThan(round[2].y)
   })
 
   it('draws a straight sidewall when stretched', () => {
-    const [p0, p1, p2, p3] = sidewallCurve({ bead, tread, maxX: 110, stiffness: 'low' })
+    const [p0, p1, p2, p3] = sidewallCurve({ bead, tread, maxX: 110, rounded: 'high' })
     expect(p1.x).toBeCloseTo(p0.x + (p3.x - p0.x) / 3, 5)
     expect(p2.x).toBeCloseTo(p0.x + ((p3.x - p0.x) * 2) / 3, 5)
   })
