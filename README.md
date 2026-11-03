@@ -6,7 +6,8 @@ from a CSV file in this repo; the app runs entirely in the browser.
 
 ## How it works
 
-1. Enter the wheel's width, diameter and offset, and the tire size.
+1. Enter the wheel's diameter, width, offset and camber, and the tire's width
+   and aspect ratio. The tire's rim diameter always matches the wheel.
 2. A dropdown lists every tire in the database at that exact size.
 3. Pick one to use its real section width, tread width, diameter, rim range and
    sidewall stiffness, or leave it on **Any tire** to estimate from the size.
@@ -80,6 +81,11 @@ looks rounded.
 - **No measuring rim:** 85% of the nominal width (70% for 50-series and up),
   to the nearest 0.5".
 - **No rim range:** the measuring rim ± 1".
+- **Camber:** the whole wheel and tire rotate by the camber angle about the
+  axle at the hub face. A point at lateral position `x` and height `y` moves
+  to `x·cos θ + y·sin θ`, so the top of the tread moves in by about
+  `radius × sin θ` for negative camber (about 11 mm at −2° on a 25.7" tire).
+  Positions marked "top" in the results use this.
 - **Wheel flange:** 0.5" per side beyond the rim width, for backspacing and
   lip position.
 

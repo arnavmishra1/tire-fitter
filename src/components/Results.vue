@@ -12,6 +12,7 @@ const diff = computed(() => compareSetups(props.current, props.next))
 const inches = (v, d = 2) => `${v.toFixed(d)}"`
 const mm = (v) => `${Math.round(v)} mm`
 const mmIn = (v) => `${Math.round(v)} mm (${(v / MM_PER_IN).toFixed(2)}")`
+const signed = (v, unit, d = 0) => `${v < 0 ? '−' : '+'}${Math.abs(v).toFixed(d)}${unit}`
 const est = (flag) => (flag ? ' *' : '')
 
 function change(v, more, less) {
@@ -28,7 +29,7 @@ const rows = computed(() => {
       label: 'Overall diameter',
       a: inches(a.dims.overallDiameterIn) + est(a.dims.estimated.diameter),
       b: inches(b.dims.overallDiameterIn) + est(b.dims.estimated.diameter),
-      change: `${d.diameterIn >= 0 ? '+' : '−'}${inches(Math.abs(d.diameterIn))} (${d.diameterPct >= 0 ? '+' : '−'}${Math.abs(d.diameterPct).toFixed(1)}%)`,
+      change: `${signed(d.diameterIn, '"', 2)} (${signed(d.diameterPct, '%', 1)})`,
     },
     {
       label: 'Sidewall height',
@@ -40,13 +41,13 @@ const rows = computed(() => {
       label: 'Section width on this wheel',
       a: mmIn(a.dims.sectionWidthMm) + est(a.dims.estimated.section),
       b: mmIn(b.dims.sectionWidthMm) + est(b.dims.estimated.section),
-      change: `${b.dims.sectionWidthMm >= a.dims.sectionWidthMm ? '+' : '−'}${mm(Math.abs(b.dims.sectionWidthMm - a.dims.sectionWidthMm))}`,
+      change: signed(b.dims.sectionWidthMm - a.dims.sectionWidthMm, ' mm'),
     },
     {
       label: 'Tread width on this wheel',
       a: mmIn(a.dims.treadWidthMm) + est(a.dims.estimated.tread),
       b: mmIn(b.dims.treadWidthMm) + est(b.dims.estimated.tread),
-      change: `${b.dims.treadWidthMm >= a.dims.treadWidthMm ? '+' : '−'}${mm(Math.abs(b.dims.treadWidthMm - a.dims.treadWidthMm))}`,
+      change: signed(b.dims.treadWidthMm - a.dims.treadWidthMm, ' mm'),
     },
     {
       label: 'Sidewall stiffness',
@@ -56,16 +57,36 @@ const rows = computed(() => {
     },
     { label: 'Backspacing', a: inches(a.backspacingIn), b: inches(b.backspacingIn), change: '' },
     {
-      label: 'Outer edge (fender)',
-      a: '',
-      b: '',
+      label: 'Camber',
+      a: `${a.wheel.camber}°`,
+      b: `${b.wheel.camber}°`,
+      change: Math.abs(d.camberDeg) < 0.05 ? 'No change' : signed(d.camberDeg, '°', 1),
+    },
+    {
+      label: 'Outer tread edge, top',
+      a: signed(a.camber.treadOuter, ' mm'),
+      b: signed(b.camber.treadOuter, ' mm'),
+      change: change(d.treadOuterMm, 'further out', 'further in'),
+      strong: true,
+    },
+    {
+      label: 'Inner tread edge, top',
+      a: signed(a.camber.treadInner, ' mm'),
+      b: signed(b.camber.treadInner, ' mm'),
+      change: change(d.treadInnerMm, 'closer to suspension', 'further from suspension'),
+      strong: true,
+    },
+    {
+      label: 'Outermost point, top half (fender)',
+      a: signed(a.camber.topOuter, ' mm'),
+      b: signed(b.camber.topOuter, ' mm'),
       change: change(d.outerMm, 'further out', 'further in'),
       strong: true,
     },
     {
-      label: 'Inner edge (suspension)',
-      a: '',
-      b: '',
+      label: 'Innermost point, top half (suspension)',
+      a: signed(a.camber.topInner, ' mm'),
+      b: signed(b.camber.topInner, ' mm'),
       change: change(d.innerMm, 'closer to suspension', 'further from suspension'),
       strong: true,
     },
@@ -104,6 +125,9 @@ const anyEstimated = computed(() =>
       When your speedometer reads 60 mph, you'll be doing
       <strong>{{ diff.actualSpeedAt60.toFixed(1) }} mph</strong>.
     </p>
-    <p v-if="anyEstimated" class="hint">* Estimated from the tire size, because the database has no value.</p>
+    <p class="hint">
+      Positions are from the hub face, with + outboard, measured with camber applied about the hub.
+      <span v-if="anyEstimated"><br />* Estimated from the tire size, because the database has no value.</span>
+    </p>
   </section>
 </template>

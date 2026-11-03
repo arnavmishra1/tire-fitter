@@ -7,13 +7,13 @@ import SetupForm from './components/SetupForm.vue'
 import { buildSetup } from './fitment.js'
 
 const current = reactive({
-  wheel: { width: 8.5, diameter: 18, offset: 35 },
-  size: { width: 245, aspect: 40, rim: 18 },
+  wheel: { diameter: 18, width: 8.5, offset: 35, camber: -1 },
+  size: { width: 245, aspect: 40 },
   tireId: '',
 })
 const next = reactive({
-  wheel: { width: 9.5, diameter: 18, offset: 22 },
-  size: { width: 255, aspect: 35, rim: 18 },
+  wheel: { diameter: 18, width: 9.5, offset: 22, camber: -2.5 },
+  size: { width: 255, aspect: 35 },
   tireId: '',
 })
 

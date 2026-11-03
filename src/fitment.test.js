@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildSetup, compareSetups, estimatedMeasuredRim, tireDimensions, tiresForSize, validateInputs } from './fitment.js'
 
-const wheel = (width, diameter, offset) => ({ width, diameter, offset })
+const wheel = (width, diameter, offset, camber = 0) => ({ width, diameter, offset, camber })
 const size = (width, aspect, rim) => ({ width, aspect, rim })
 
 describe('validateInputs', () => {
@@ -9,8 +9,8 @@ describe('validateInputs', () => {
     expect(validateInputs(wheel(8.5, 18, 35), size(245, 40, 18))).toEqual([])
   })
 
-  it('rejects a tire that does not match the wheel diameter', () => {
-    expect(validateInputs(wheel(8.5, 18, 35), size(245, 40, 17))[0]).toMatch(/won't mount/)
+  it('rejects out-of-range camber', () => {
+    expect(validateInputs(wheel(8.5, 18, 35, -12), size(245, 40, 18))[0]).toMatch(/Camber/)
   })
 
   it('rejects missing values', () => {
@@ -66,6 +66,32 @@ describe('buildSetup and compareSetups', () => {
     const tire = { width: 245, aspect: 40, rim: 18, measuredRimIn: 8.5, rimMinIn: 8, rimMaxIn: 9.5 }
     expect(buildSetup(wheel(10.5, 18, 35), size(245, 40, 18), tire).warnings[0]).toMatch(/stretched/)
     expect(buildSetup(wheel(7, 18, 35), size(245, 40, 18), tire).warnings[0]).toMatch(/bulge/)
+  })
+
+  it('takes the tire rim diameter from the wheel', () => {
+    const s = buildSetup(wheel(8, 17, 40), { width: 225, aspect: 45 })
+    expect(s.size.rim).toBe(17)
+    expect(s.dims.overallDiameterIn).toBeCloseTo(17 + (2 * 225 * 0.45) / 25.4, 5)
+  })
+
+  it('matches edges at hub height and at the top when camber is zero', () => {
+    expect(a.camber.topOuter).toBeCloseTo(a.edges.outer, 0)
+    expect(a.camber.topInner).toBeCloseTo(a.edges.inner, 0)
+  })
+
+  it('moves the top tread edge by camber about the hub', () => {
+    const flat = buildSetup(wheel(8.5, 18, 35), size(245, 40, 18))
+    const tilted = buildSetup(wheel(8.5, 18, 35, -2), size(245, 40, 18))
+    const r = flat.outerRadiusMm
+    const x = flat.centerMm + flat.dims.treadWidthMm / 2
+    const t = (-2 * Math.PI) / 180
+    expect(tilted.camber.treadOuter).toBeCloseTo(x * Math.cos(t) + r * Math.sin(t), 6)
+    // About R × sin(2°) ≈ 11 mm in for a 25.7" tire.
+    expect(flat.camber.treadOuter - tilted.camber.treadOuter).toBeCloseTo(11.4, 0)
+    const d = compareSetups(flat, tilted)
+    expect(d.treadOuterMm).toBeLessThan(0)
+    expect(d.treadInnerMm).toBeGreaterThan(0)
+    expect(d.camberDeg).toBe(-2)
   })
 
   it('ignores a selected tire of a different size', () => {

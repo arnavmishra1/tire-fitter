@@ -2,12 +2,10 @@
 // positive values pointing outboard (toward the fender lip) and negative
 // values inboard (toward the suspension).
 
-export const MM_PER_IN = 25.4
+import { FLANGE_WIDTH_MM, MM_PER_IN } from './constants.js'
+import { camberedEdges } from './tireModel.js'
 
-// The rim flange sticks out past the bead seat by about half an inch each
-// side, so an 8.5" wheel is about 9.5" wide overall.
-export const FLANGE_WIDTH_MM = 12.7
-export const FLANGE_HEIGHT_MM = 17.5
+export { MM_PER_IN } from './constants.js'
 
 // Rules of thumb for how tire width follows rim width: about 0.2" of section
 // width per 0.5" of rim, and roughly half that for the tread face.
@@ -37,12 +35,9 @@ export function validateInputs(wheel, size) {
   check(wheel.width, 3, 16, 'Wheel width')
   check(wheel.diameter, 10, 30, 'Wheel diameter')
   check(wheel.offset, -100, 100, 'Offset')
+  check(wheel.camber, -10, 10, 'Camber')
   check(size.width, 100, 400, 'Tire width')
   check(size.aspect, 20, 90, 'Aspect ratio')
-  check(size.rim, 10, 30, 'Tire diameter')
-  if (!errors.length && size.rim !== wheel.diameter) {
-    errors.push(`A ${size.rim}" tire won't mount on a ${wheel.diameter}" wheel.`)
-  }
   return errors
 }
 
@@ -120,10 +115,14 @@ export function tireDimensions(size, tire, rimWidthIn) {
   }
 }
 
-/** Everything needed to compare and draw one wheel and tire setup. */
-export function buildSetup(wheel, size, tire) {
-  const errors = validateInputs(wheel, size)
+/**
+ * Everything needed to compare and draw one wheel and tire setup. The tire's
+ * rim diameter always matches the wheel, so `size` is just width and aspect.
+ */
+export function buildSetup(wheel, tireSize, tire) {
+  const errors = validateInputs(wheel, tireSize)
   if (errors.length) return { ok: false, errors }
+  const size = { width: tireSize.width, aspect: tireSize.aspect, rim: wheel.diameter }
 
   const matched = tire && tire.width === size.width && tire.aspect === size.aspect && tire.rim === size.rim
   const dims = tireDimensions(size, matched ? tire : null, wheel.width)
@@ -155,7 +154,7 @@ export function buildSetup(wheel, size, tire) {
     warnings.push('The wheel lip sticks out past the tire sidewall, so curbs will hit the wheel first.')
   }
 
-  return {
+  const setup = {
     ok: true,
     wheel,
     size,
@@ -170,6 +169,8 @@ export function buildSetup(wheel, size, tire) {
     edges,
     warnings,
   }
+  setup.camber = camberedEdges(setup)
+  return setup
 }
 
 function fmtRange(dims) {
@@ -178,9 +179,11 @@ function fmtRange(dims) {
 }
 
 /**
- * Changes from setup a (current) to setup b (new). Positive `outerMm` means
- * further out toward the fender; positive `innerMm` means closer to the
- * suspension.
+ * Changes from setup a (current) to setup b (new). Outer changes are positive
+ * when further out toward the fender; inner changes are positive when closer
+ * to the suspension. `outerMm`, `innerMm` and the tread values are at the top
+ * of the tire with camber applied; the wheel and tire values are at hub
+ * height.
  */
 export function compareSetups(a, b) {
   const da = a.dims.overallDiameterIn
@@ -189,8 +192,11 @@ export function compareSetups(a, b) {
     diameterIn: db - da,
     diameterPct: ((db - da) / da) * 100,
     radiusMm: b.outerRadiusMm - a.outerRadiusMm,
-    outerMm: b.edges.outer - a.edges.outer,
-    innerMm: a.edges.inner - b.edges.inner,
+    camberDeg: b.wheel.camber - a.wheel.camber,
+    outerMm: b.camber.topOuter - a.camber.topOuter,
+    innerMm: a.camber.topInner - b.camber.topInner,
+    treadOuterMm: b.camber.treadOuter - a.camber.treadOuter,
+    treadInnerMm: a.camber.treadInner - b.camber.treadInner,
     wheelOuterMm: b.edges.wheelOuter - a.edges.wheelOuter,
     wheelInnerMm: a.edges.wheelInner - b.edges.wheelInner,
     tireOuterMm: b.edges.tireOuter - a.edges.tireOuter,
