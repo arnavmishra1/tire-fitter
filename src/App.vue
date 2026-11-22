@@ -47,8 +47,6 @@ const contacts = computed(() =>
 const problems = computed(() => [
   ...(currentSetup.value.errors ?? []).map((m) => ({ who: 'Current', type: 'error', m })),
   ...(nextSetup.value.errors ?? []).map((m) => ({ who: 'New', type: 'error', m })),
-  ...(currentSetup.value.warnings ?? []).map((m) => ({ who: 'Current', type: 'warning', m })),
-  ...(nextSetup.value.warnings ?? []).map((m) => ({ who: 'New', type: 'warning', m })),
   ...contacts.value,
 ])
 </script>

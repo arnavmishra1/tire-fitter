@@ -10,8 +10,6 @@
   --current-fill: rgba(107, 116, 128, 0.1);
   --wheel: #9aa3ad;
   --error: #b42318;
-  --warning: #9a6700;
-  --warning-bg: #fff8e5;
   --error-bg: #fdecea;
   --flag: #d92d20;
   --fender: #2b3036;
@@ -31,8 +29,6 @@
     --current-fill: rgba(154, 163, 173, 0.1);
     --wheel: #6b7480;
     --error: #ff8a80;
-    --warning: #f2c94c;
-    --warning-bg: #2b2612;
     --error-bg: #2d1615;
     --flag: #f04438;
     --fender: #c9ced4;
@@ -233,11 +229,6 @@ select:focus {
 .problems .contact {
   background: var(--error-bg);
   color: var(--error);
-}
-
-.problems .warning {
-  background: var(--warning-bg);
-  color: var(--warning);
 }
 
 .cross-section.contact {

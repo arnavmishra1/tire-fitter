@@ -67,12 +67,6 @@ describe('buildSetup and compareSetups', () => {
     expect(d.actualSpeedAt60).toBeCloseTo((60 * b.dims.overallDiameterIn) / a.dims.overallDiameterIn, 5)
   })
 
-  it('warns when the wheel is outside the rim range', () => {
-    const tire = { width: 245, aspect: 40, rim: 18, measuredRimIn: 8.5, rimMinIn: 8, rimMaxIn: 9.5 }
-    expect(buildSetup(wheel(10.5, 18, 35), size(245, 40, 18), tire).warnings[0]).toMatch(/stretched/)
-    expect(buildSetup(wheel(7, 18, 35), size(245, 40, 18), tire).warnings[0]).toMatch(/bulge/)
-  })
-
   it('matches the wheel lip at zero camber and moves the rim edges with camber', () => {
     expect(a.camber.rimOuter).toBeCloseTo(a.edges.wheelOuter, 9)
     expect(a.camber.rimInner).toBeCloseTo(a.edges.wheelInner, 9)

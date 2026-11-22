@@ -137,20 +137,6 @@ export function buildSetup(wheel, tireSize, tire) {
   edges.inner = Math.min(edges.wheelInner, edges.tireInner)
   edges.outer = Math.max(edges.wheelOuter, edges.tireOuter)
 
-  const warnings = []
-  if (wheel.width < dims.rimMinIn) {
-    warnings.push(
-      `${wheel.width}" is narrower than the ${fmtRange(dims)} rim range for this tire, so the sidewall will bulge.`,
-    )
-  } else if (wheel.width > dims.rimMaxIn) {
-    warnings.push(
-      `${wheel.width}" is wider than the ${fmtRange(dims)} rim range for this tire, so the tire will be stretched.`,
-    )
-  }
-  if (edges.wheelOuter > edges.tireOuter) {
-    warnings.push('The wheel lip sticks out past the tire sidewall, so curbs will hit the wheel first.')
-  }
-
   const setup = {
     ok: true,
     wheel,
@@ -164,15 +150,9 @@ export function buildSetup(wheel, tireSize, tire) {
     backspacingIn: (wheel.offset + wheelHalfMm) / MM_PER_IN,
     frontspacingIn: (wheelHalfMm - wheel.offset) / MM_PER_IN,
     edges,
-    warnings,
   }
   setup.camber = camberedEdges(setup)
   return setup
-}
-
-function fmtRange(dims) {
-  const range = `${dims.rimMinIn}–${dims.rimMaxIn}"`
-  return dims.estimated.rimRange ? `estimated ${range}` : `approved ${range}`
 }
 
 /**
