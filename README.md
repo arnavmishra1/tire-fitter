@@ -16,6 +16,21 @@ When any spec is estimated because the database has no value for it, a red
 **!** appears at the top right of the drawing. Hover over it (or tab to it) to
 see which specs are estimated for each setup.
 
+## Fender lip
+
+The drawing also shows the bottom of the fender: the outer skin, 90 mm
+outboard of the hub face, and its lip, which runs 20 mm inboard. Camber doesn't
+tilt it, since it's part of the body.
+
+- **Roll Fender** folds the lip flat against the inside of the skin. It
+  adds about 2 mm of thickness but no longer sticks inboard.
+- The vertical **Ride height** slider sets the distance from the hub center to
+  the bottom of the fender lip, from 10" to 14¾" in ⅛" steps. It starts at 14½".
+
+If either setup's tire or wheel reaches the lip, the drawing's outline turns
+red and a **Contact** warning appears above it. Anything at or above the lip,
+from the lip's inner edge outward, counts as contact.
+
 ## Run locally
 
 You need Node 24 or newer.

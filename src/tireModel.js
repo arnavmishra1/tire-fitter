@@ -104,6 +104,28 @@ function wheelCorners(setup) {
   ])
 }
 
+/** Outline of the top tire section with camber applied, as a polygon. */
+export function camberedTirePolygon(setup) {
+  return tireSectionPoints(setup).map((p) => rotatePoint(p, setup.wheel.camber))
+}
+
+/** The top half of each wheel flange with camber applied, as polygons. */
+export function camberedFlangePolygons(setup) {
+  const { centerMm: c, rimHalfMm, rimRadiusMm } = setup
+  const y0 = rimRadiusMm - BARREL_MM
+  const y1 = rimRadiusMm + FLANGE_HEIGHT_MM
+  return [-1, 1].map((s) => {
+    const a = c + s * rimHalfMm
+    const b = c + s * (rimHalfMm + FLANGE_WIDTH_MM)
+    return [
+      { x: a, y: y0 },
+      { x: b, y: y0 },
+      { x: b, y: y1 },
+      { x: a, y: y1 },
+    ].map((p) => rotatePoint(p, setup.wheel.camber))
+  })
+}
+
 /** Every outline point of the whole wheel and tire, with camber applied. */
 export function outlinePoints(setup) {
   const top = [...tireSectionPoints(setup), ...wheelCorners(setup)]

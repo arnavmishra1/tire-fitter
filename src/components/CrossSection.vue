@@ -1,5 +1,13 @@
 <script setup>
 import { computed } from 'vue'
+import {
+  FENDER_SKIN_MM,
+  MM_PER_IN,
+  RIDE_HEIGHT_MAX_IN,
+  RIDE_HEIGHT_MIN_IN,
+  RIDE_HEIGHT_STEP_IN,
+} from '../constants.js'
+import { fenderPolygon, polygonPath } from '../fenderModel.js'
 import { outlinePoints, tirePath, treadLine, wheelRects } from '../tireModel.js'
 
 // setups: [{ key: 'current' | 'next', label, setup }] with setup.ok === true
@@ -7,10 +15,29 @@ const props = defineProps({
   setups: { type: Array, required: true },
   // [{ who: 'Current', specs: ['section width', ...] }] for setups with estimated specs
   estimates: { type: Array, default: () => [] },
+  // True when any tire or wheel touches the fender.
+  contact: { type: Boolean, default: false },
+})
+// { rideHeightIn, rolled }
+const fender = defineModel('fender', { type: Object, required: true })
+
+// The drawn skin reaches a little past the tallest tire, so contact up in the
+// wheel arch still shows.
+const fenderPoints = computed(() => {
+  const tireTop = Math.max(...props.setups.flatMap((s) => outlinePoints(s.setup).map((p) => p.y)))
+  const lip = fender.value.rideHeightIn * MM_PER_IN
+  return fenderPolygon(fender.value, Math.max(lip + FENDER_SKIN_MM, tireTop + 15))
+})
+const fenderD = computed(() => polygonPath(fenderPoints.value))
+
+const EIGHTHS = ['', '⅛', '¼', '⅜', '½', '⅝', '¾', '⅞']
+const rideHeightLabel = computed(() => {
+  const eighths = Math.round(fender.value.rideHeightIn * 8)
+  return `${Math.floor(eighths / 8)}${EIGHTHS[eighths % 8]}"`
 })
 
 const view = computed(() => {
-  const points = props.setups.flatMap((s) => outlinePoints(s.setup))
+  const points = [...props.setups.flatMap((s) => outlinePoints(s.setup)), ...fenderPoints.value]
   const xs = points.map((p) => p.x)
   const ys = points.map((p) => p.y)
   const xMin = Math.min(0, ...xs) - 30
@@ -38,76 +65,102 @@ const shapes = computed(() =>
 </script>
 
 <template>
-  <figure class="card cross-section">
-    <div v-if="estimates.length" class="estimate-flag" tabindex="0" aria-describedby="estimate-tip">
-      <span class="estimate-icon" aria-hidden="true">!</span>
-      <div id="estimate-tip" role="tooltip" class="estimate-tip">
-        <p>Some specs are estimates, because no data was available for them. They're worked out from the tire size.</p>
-        <p v-for="e in estimates" :key="e.who"><strong>{{ e.who }}:</strong> {{ e.specs.join(', ') }}</p>
+  <figure :class="['card', 'cross-section', { contact }]">
+    <div class="cross-body">
+      <svg
+        :viewBox="`${view.xMin} ${-view.yTop} ${view.w} ${view.h}`"
+        role="img"
+        aria-label="Cross-section of the current and new wheel and tire under the fender lip, seen from the front of the car"
+      >
+        <g v-for="s in shapes" :key="s.key" :class="['setup-shape', s.key]" :transform="`rotate(${s.camber})`">
+          <path v-for="(d, i) in s.tires" :key="i" :d="d" class="tire" vector-effect="non-scaling-stroke" />
+          <line
+            v-for="(t, i) in s.treads"
+            :key="`t${i}`"
+            v-bind="t"
+            class="tread"
+            vector-effect="non-scaling-stroke"
+          />
+          <rect
+            v-for="(r, i) in s.wheel"
+            :key="`w${i}`"
+            :x="r.x"
+            :y="r.y"
+            :width="r.w"
+            :height="r.h"
+            class="wheel"
+            vector-effect="non-scaling-stroke"
+          />
+        </g>
+
+        <!-- Ticks above the tire at each setup's outer tread edge. -->
+        <line
+          v-for="s in shapes"
+          :key="`g${s.key}`"
+          :class="['guide', s.key]"
+          :x1="s.tread.x"
+          :x2="s.tread.x"
+          :y1="-(s.tread.y + 4)"
+          :y2="-view.guideTop"
+          vector-effect="non-scaling-stroke"
+        />
+
+        <path :d="fenderD" :class="['fender', { contact }]" vector-effect="non-scaling-stroke" />
+
+        <line x1="0" x2="0" :y1="-view.guideTop" :y2="-view.yBottom" class="hub" vector-effect="non-scaling-stroke" />
+        <circle cx="0" cy="0" :r="view.font * 0.25" class="pivot" />
+        <text x="0" :y="-view.guideTop - view.font * 0.5" text-anchor="middle" class="label" :font-size="view.font">
+          Hub face
+        </text>
+        <text :x="view.xMin + view.font * 0.3" :y="view.font * 0.35" class="label muted" :font-size="view.font * 0.85">
+          ← Inboard
+        </text>
+        <text
+          :x="view.xMax - view.font * 0.3"
+          :y="view.font * 0.35"
+          text-anchor="end"
+          class="label muted"
+          :font-size="view.font * 0.85"
+        >
+          Outboard →
+        </text>
+      </svg>
+
+      <div class="fender-controls">
+        <div v-if="estimates.length" class="estimate-flag" tabindex="0" aria-describedby="estimate-tip">
+          <span class="estimate-icon" aria-hidden="true">!</span>
+          <div id="estimate-tip" role="tooltip" class="estimate-tip">
+            <p>Some specs are estimates, because no data was available for them. They're worked out from the tire size.</p>
+            <p v-for="e in estimates" :key="e.who"><strong>{{ e.who }}:</strong> {{ e.specs.join(', ') }}</p>
+          </div>
+        </div>
+        <label class="check">
+          <input v-model="fender.rolled" type="checkbox" />
+          Roll Fender
+        </label>
+        <label for="ride-height" class="ride-height-label">Ride height</label>
+        <div class="ride-height">
+          <input
+            id="ride-height"
+            v-model.number="fender.rideHeightIn"
+            type="range"
+            :min="RIDE_HEIGHT_MIN_IN"
+            :max="RIDE_HEIGHT_MAX_IN"
+            :step="RIDE_HEIGHT_STEP_IN"
+            :aria-valuetext="`${rideHeightLabel} from hub center to fender lip`"
+          />
+          <output for="ride-height">{{ rideHeightLabel }}</output>
+        </div>
+        <span class="hint">Hub center to fender lip</span>
       </div>
     </div>
-    <svg
-      :viewBox="`${view.xMin} ${-view.yTop} ${view.w} ${view.h}`"
-      role="img"
-      aria-label="Cross-section of the current and new wheel and tire, seen from the front of the car"
-    >
-      <g v-for="s in shapes" :key="s.key" :class="['setup-shape', s.key]" :transform="`rotate(${s.camber})`">
-        <path v-for="(d, i) in s.tires" :key="i" :d="d" class="tire" vector-effect="non-scaling-stroke" />
-        <line
-          v-for="(t, i) in s.treads"
-          :key="`t${i}`"
-          v-bind="t"
-          class="tread"
-          vector-effect="non-scaling-stroke"
-        />
-        <rect
-          v-for="(r, i) in s.wheel"
-          :key="`w${i}`"
-          :x="r.x"
-          :y="r.y"
-          :width="r.w"
-          :height="r.h"
-          class="wheel"
-          vector-effect="non-scaling-stroke"
-        />
-      </g>
-
-      <!-- Ticks above the tire at each setup's outer tread edge. -->
-      <line
-        v-for="s in shapes"
-        :key="`g${s.key}`"
-        :class="['guide', s.key]"
-        :x1="s.tread.x"
-        :x2="s.tread.x"
-        :y1="-(s.tread.y + 4)"
-        :y2="-view.guideTop"
-        vector-effect="non-scaling-stroke"
-      />
-
-      <line x1="0" x2="0" :y1="-view.guideTop" :y2="-view.yBottom" class="hub" vector-effect="non-scaling-stroke" />
-      <circle cx="0" cy="0" :r="view.font * 0.25" class="pivot" />
-      <text x="0" :y="-view.guideTop - view.font * 0.5" text-anchor="middle" class="label" :font-size="view.font">
-        Hub face
-      </text>
-      <text :x="view.xMin + view.font * 0.3" :y="view.font * 0.35" class="label muted" :font-size="view.font * 0.85">
-        ← Inboard
-      </text>
-      <text
-        :x="view.xMax - view.font * 0.3"
-        :y="view.font * 0.35"
-        text-anchor="end"
-        class="label muted"
-        :font-size="view.font * 0.85"
-      >
-        Outboard →
-      </text>
-    </svg>
     <figcaption>
       <span v-for="s in shapes" :key="s.key" :class="['legend', s.key]">
         <span class="swatch"></span>{{ s.label }} ({{ s.camber }}°)
       </span>
       <span class="hint">
-        Seen from the front of the car. Ticks at the top mark the outer tread edge; camber tilts about the hub.
+        Seen from the front of the car. Ticks at the top mark the outer tread edge; camber tilts about the hub. The
+        fender lip is part of the body, so camber doesn't move it.
       </span>
     </figcaption>
   </figure>

@@ -4,6 +4,8 @@ import tires from '../data/tires.csv'
 import CrossSection from './components/CrossSection.vue'
 import Results from './components/Results.vue'
 import SetupForm from './components/SetupForm.vue'
+import { RIDE_HEIGHT_DEFAULT_IN } from './constants.js'
+import { contactWarnings, fenderContact } from './fenderModel.js'
 import { buildSetup, estimatedSpecs } from './fitment.js'
 
 const current = reactive({
@@ -16,6 +18,8 @@ const next = reactive({
   size: { width: 225, aspect: 45 },
   tireId: '',
 })
+
+const fender = reactive({ rideHeightIn: RIDE_HEIGHT_DEFAULT_IN, rolled: false })
 
 const tireById = new Map(tires.map((t) => [t.id, t]))
 const currentSetup = computed(() => buildSetup(current.wheel, current.size, tireById.get(current.tireId)))
@@ -31,11 +35,21 @@ const estimates = computed(() =>
     : [],
 )
 
+const contacts = computed(() =>
+  bothOk.value
+    ? [
+        { who: 'Current', m: contactWarnings(fenderContact(currentSetup.value, fender)) },
+        { who: 'New', m: contactWarnings(fenderContact(nextSetup.value, fender)) },
+      ].flatMap((c) => c.m.map((m) => ({ who: c.who, type: 'contact', m })))
+    : [],
+)
+
 const problems = computed(() => [
   ...(currentSetup.value.errors ?? []).map((m) => ({ who: 'Current', type: 'error', m })),
   ...(nextSetup.value.errors ?? []).map((m) => ({ who: 'New', type: 'error', m })),
   ...(currentSetup.value.warnings ?? []).map((m) => ({ who: 'Current', type: 'warning', m })),
   ...(nextSetup.value.warnings ?? []).map((m) => ({ who: 'New', type: 'warning', m })),
+  ...contacts.value,
 ])
 </script>
 
@@ -63,7 +77,9 @@ const problems = computed(() => [
           { key: 'current', label: 'Current', setup: currentSetup },
           { key: 'next', label: 'New', setup: nextSetup },
         ]"
+        v-model:fender="fender"
         :estimates="estimates"
+        :contact="contacts.length > 0"
       />
       <Results :current="currentSetup" :next="nextSetup" />
     </template>

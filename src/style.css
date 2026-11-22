@@ -14,6 +14,7 @@
   --warning-bg: #fff8e5;
   --error-bg: #fdecea;
   --flag: #d92d20;
+  --fender: #2b3036;
   color-scheme: light;
 }
 
@@ -34,6 +35,7 @@
     --warning-bg: #2b2612;
     --error-bg: #2d1615;
     --flag: #f04438;
+    --fender: #c9ced4;
     color-scheme: dark;
   }
 }
@@ -227,7 +229,8 @@ select:focus {
   border-radius: 8px;
 }
 
-.problems .error {
+.problems .error,
+.problems .contact {
   background: var(--error-bg);
   color: var(--error);
 }
@@ -237,14 +240,78 @@ select:focus {
   color: var(--warning);
 }
 
-.cross-section {
-  position: relative;
+.cross-section.contact {
+  border-color: var(--flag);
+  box-shadow: 0 0 0 1px var(--flag);
+}
+
+.cross-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.fender-controls {
+  flex: 0 0 auto;
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fender-controls .check {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text);
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.fender-controls input[type='checkbox'] {
+  width: auto;
+  margin: 1px 0 0;
+  padding: 0;
+  accent-color: var(--next);
+  flex: 0 0 auto;
+}
+
+.ride-height-label {
+  margin-top: 8px;
+  color: var(--text);
+}
+
+.ride-height {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Vertical, with the top end at the highest ride height. */
+.ride-height input[type='range'] {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 24px;
+  height: 180px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--next);
+  cursor: pointer;
+}
+
+.ride-height output {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fender-controls .hint {
+  line-height: 1.3;
 }
 
 .estimate-flag {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  position: relative;
+  align-self: flex-end;
   z-index: 1;
 }
 
@@ -298,10 +365,24 @@ select:focus {
 }
 
 .cross-section svg {
+  flex: 1 1 auto;
+  min-width: 0;
   width: 100%;
   height: auto;
   max-height: 640px;
   display: block;
+}
+
+.fender {
+  fill: var(--fender);
+  stroke: var(--fender);
+  stroke-width: 1;
+  stroke-linejoin: miter;
+}
+
+.fender.contact {
+  fill: var(--flag);
+  stroke: var(--flag);
 }
 
 .setup-shape .tire {
@@ -437,6 +518,14 @@ footer {
 }
 
 @media (max-width: 520px) {
+  .cross-body {
+    gap: 8px;
+  }
+
+  .fender-controls {
+    width: 88px;
+  }
+
   th,
   td {
     padding: 6px 4px;
