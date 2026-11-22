@@ -33,6 +33,13 @@ const fenderD = computed(() => polygonPath(fenderPoints.value))
 // 'full' shows the whole wheel; 'top' crops to the top half, near the fender.
 const viewMode = ref('full')
 
+// Key of the setup whose drawing is hidden, or null. Only one can be hidden,
+// so checking one box unchecks the other.
+const hidden = ref(null)
+function setHidden(key, checked) {
+  hidden.value = checked ? key : null
+}
+
 const EIGHTHS = ['', '⅛', '¼', '⅜', '½', '⅝', '¾', '⅞']
 const rideHeightLabel = computed(() => {
   const eighths = Math.round(fender.value.rideHeightIn * 8)
@@ -58,6 +65,9 @@ const view = computed(() => {
   return { xMin, xMax, maxY, guideTop, yTop, yBottom, w: xMax - xMin, h: yTop - yBottom, font }
 })
 
+// Hidden setups still set the view, so hiding one doesn't rescale the drawing.
+const visibleShapes = computed(() => shapes.value.filter((s) => s.key !== hidden.value))
+
 const shapes = computed(() =>
   props.setups.map(({ key, label, setup }) => ({
     key,
@@ -74,12 +84,22 @@ const shapes = computed(() =>
 <template>
   <figure :class="['card', 'cross-section', { contact }]">
     <div class="cross-body">
+      <div class="hide-controls">
+        <label v-for="s in shapes" :key="s.key" class="check">
+          <input
+            type="checkbox"
+            :checked="hidden === s.key"
+            @change="setHidden(s.key, $event.target.checked)"
+          />
+          Hide {{ s.label }}
+        </label>
+      </div>
       <svg
         :viewBox="`${view.xMin} ${-view.yTop} ${view.w} ${view.h}`"
         role="img"
         aria-label="Cross-section of the current and new wheel and tire under the fender lip, seen from the front of the car"
       >
-        <g v-for="s in shapes" :key="s.key" :class="['setup-shape', s.key]" :transform="`rotate(${s.camber})`">
+        <g v-for="s in visibleShapes" :key="s.key" :class="['setup-shape', s.key]" :transform="`rotate(${s.camber})`">
           <path v-for="(d, i) in s.tires" :key="i" :d="d" class="tire" vector-effect="non-scaling-stroke" />
           <line
             v-for="(t, i) in s.treads"
@@ -102,7 +122,7 @@ const shapes = computed(() =>
 
         <!-- Ticks above the tire at each setup's outer tread edge. -->
         <line
-          v-for="s in shapes"
+          v-for="s in visibleShapes"
           :key="`g${s.key}`"
           :class="['guide', s.key]"
           :x1="s.tread.x"
@@ -168,11 +188,11 @@ const shapes = computed(() =>
           />
           <output for="ride-height">{{ rideHeightLabel }}</output>
         </div>
-        <span class="hint">Hub center to fender lip</span>
+        <span class="hint">Hub to Fender Lip</span>
       </div>
     </div>
     <figcaption>
-      <span v-for="s in shapes" :key="s.key" :class="['legend', s.key]">
+      <span v-for="s in shapes" :key="s.key" :class="['legend', s.key, { hidden: hidden === s.key }]">
         <span class="swatch"></span>{{ s.label }} ({{ s.camber }}°)
       </span>
       <span class="hint">

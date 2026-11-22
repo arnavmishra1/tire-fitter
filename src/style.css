@@ -237,20 +237,29 @@ select:focus {
 }
 
 .cross-body {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'hide drawing controls';
   gap: 12px;
-  align-items: flex-start;
+  align-items: start;
+}
+
+.hide-controls {
+  grid-area: hide;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .fender-controls {
-  flex: 0 0 auto;
+  grid-area: controls;
   width: 140px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.fender-controls .check {
+.cross-section .check {
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -259,7 +268,7 @@ select:focus {
   cursor: pointer;
 }
 
-.fender-controls input[type='checkbox'] {
+.cross-section .check input[type='checkbox'] {
   width: auto;
   margin: 1px 0 0;
   padding: 0;
@@ -396,7 +405,7 @@ select:focus {
 }
 
 .cross-section svg {
-  flex: 1 1 auto;
+  grid-area: drawing;
   min-width: 0;
   width: 100%;
   height: auto;
@@ -500,6 +509,10 @@ figcaption {
   gap: 6px;
 }
 
+.legend.hidden {
+  opacity: 0.4;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -549,7 +562,13 @@ footer {
 }
 
 @media (max-width: 520px) {
+  /* The hide boxes move above the drawing so it keeps its width. */
   .cross-body {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'hide controls'
+      'drawing controls';
+    grid-template-rows: auto 1fr;
     gap: 8px;
   }
 

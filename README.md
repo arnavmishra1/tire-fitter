@@ -26,6 +26,8 @@ tilt it, since it's part of the body.
   adds about 2 mm of thickness but no longer sticks inboard.
 - The vertical **Ride height** slider sets the distance from the hub center to
   the bottom of the fender lip, from 10" to 14¾" in ⅛" steps. It starts at 14½".
+- **Hide Current** and **Hide New**, at the top left, hide one setup's drawing
+  so the other is easier to see. Only one can be checked at a time.
 - **Full View / Top View** switches between the whole drawing and roughly its
   top half, for a closer look at the fender.
 
