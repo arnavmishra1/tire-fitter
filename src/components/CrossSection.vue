@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   FENDER_SKIN_MM,
   MM_PER_IN,
@@ -30,6 +30,9 @@ const fenderPoints = computed(() => {
 })
 const fenderD = computed(() => polygonPath(fenderPoints.value))
 
+// 'full' shows the whole wheel; 'top' crops to the top half, near the fender.
+const viewMode = ref('full')
+
 const EIGHTHS = ['', '⅛', '¼', '⅜', '½', '⅝', '¾', '⅞']
 const rideHeightLabel = computed(() => {
   const eighths = Math.round(fender.value.rideHeightIn * 8)
@@ -44,10 +47,14 @@ const view = computed(() => {
   const xMax = Math.max(0, ...xs) + 30
   const maxY = Math.max(...ys)
   const minY = Math.min(...ys)
-  const font = Math.max(xMax - xMin, maxY - minY) * 0.024
+  // Text scales with the visible area, so it stays the same size on screen
+  // in both views.
+  const top = viewMode.value === 'top'
+  const font = Math.max(xMax - xMin, top ? maxY : maxY - minY) * 0.024
   const guideTop = maxY + 22
   const yTop = guideTop + font * 1.6
-  const yBottom = minY - 15
+  // Top view stops just below the hub so the Inboard/Outboard labels still fit.
+  const yBottom = top ? -font * 1.2 : minY - 15
   return { xMin, xMax, maxY, guideTop, yTop, yBottom, w: xMax - xMin, h: yTop - yBottom, font }
 })
 
@@ -138,6 +145,16 @@ const shapes = computed(() =>
           <input v-model="fender.rolled" type="checkbox" />
           Roll Fender
         </label>
+        <div class="view-toggle" role="radiogroup" aria-label="Drawing view">
+          <label :class="{ on: viewMode === 'full' }">
+            <input v-model="viewMode" type="radio" name="view-mode" value="full" />
+            Full View
+          </label>
+          <label :class="{ on: viewMode === 'top' }">
+            <input v-model="viewMode" type="radio" name="view-mode" value="top" />
+            Top View
+          </label>
+        </div>
         <label for="ride-height" class="ride-height-label">Ride height</label>
         <div class="ride-height">
           <input

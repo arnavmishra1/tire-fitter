@@ -253,7 +253,7 @@ select:focus {
 
 .fender-controls {
   flex: 0 0 auto;
-  width: 112px;
+  width: 140px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -274,6 +274,46 @@ select:focus {
   padding: 0;
   accent-color: var(--next);
   flex: 0 0 auto;
+}
+
+.view-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.view-toggle label {
+  display: block;
+  padding: 4px 0;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.view-toggle label.on {
+  background: var(--next);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* The radios stay focusable for keyboards but are hidden visually. */
+.view-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.view-toggle label:has(input:focus-visible) {
+  outline: 2px solid var(--next);
+  outline-offset: 1px;
 }
 
 .ride-height-label {
@@ -523,7 +563,11 @@ footer {
   }
 
   .fender-controls {
-    width: 88px;
+    width: 112px;
+  }
+
+  .view-toggle label {
+    font-size: 0.7rem;
   }
 
   th,
